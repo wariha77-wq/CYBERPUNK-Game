@@ -1,0 +1,543 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CYBERPUNK 2086 — NEXUS-86 Terminal</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.js"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@700;900&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: #05070a;
+      color: #f8fafc;
+    }
+
+    .font-display { font-family: 'Cinzel', serif; }
+    .font-mono-tech { font-family: 'JetBrains Mono', monospace; }
+
+    .glass-panel {
+      background: rgba(11, 18, 32, 0.84);
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
+      border: 1px solid rgba(56, 189, 248, 0.22);
+    }
+
+    .glow-btn {
+      box-shadow: 0 0 24px rgba(56, 189, 248, 0.45), inset 0 0 10px rgba(255, 255, 255, 0.25);
+      transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .glow-btn:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 0 36px rgba(56, 189, 248, 0.75), inset 0 0 14px rgba(255, 255, 255, 0.4);
+    }
+
+    .evidence-item.active {
+      background: rgba(56, 189, 248, 0.16);
+      border-color: rgba(56, 189, 248, 0.8);
+      box-shadow: 0 0 20px rgba(56, 189, 248, 0.15);
+    }
+
+    .grid-bg {
+      background-image:
+        linear-gradient(to right, rgba(56, 189, 248, 0.04) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(56, 189, 248, 0.04) 1px, transparent 1px);
+      background-size: 36px 36px;
+    }
+
+    @keyframes fadeSlideUp {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .animate-in { animation: fadeSlideUp 0.35s ease-out forwards; }
+  </style>
+</head>
+<body class="min-h-screen grid-bg relative flex flex-col justify-between selection:bg-sky-500 selection:text-slate-950">
+
+  <div class="fixed inset-0 bg-gradient-to-b from-slate-950/60 via-transparent to-slate-950/90 pointer-events-none z-0"></div>
+
+  <!-- PERSISTENT NEXUS-86 TOP HUD BAR -->
+  <header class="relative z-20 border-b border-slate-800/90 bg-slate-950/85 backdrop-blur-md sticky top-0">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 py-3.5 flex flex-wrap items-center justify-between gap-4">
+      
+      <div class="flex items-center gap-3">
+        <a
+          href="main.html"
+          class="px-3 py-1.5 rounded-full border border-slate-800 hover:border-sky-400/50 text-xs font-mono-tech text-slate-400 hover:text-white transition"
+        >
+          &larr; EXIT
+        </a>
+        <div class="flex items-center gap-2">
+          <span id="masm-status-dot" class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+          <span class="font-mono-tech text-xs sm:text-sm font-bold tracking-wider text-sky-400">
+            NEXUS-86 // MASM ENGINE
+          </span>
+        </div>
+      </div>
+
+      <!-- Mission Nodes -->
+      <nav aria-label="Mission Nodes" class="flex items-center gap-1.5 font-mono-tech text-xs">
+        <span data-m="1" class="m-pill px-2.5 py-1 rounded-md border border-slate-800 text-slate-400">M01</span>
+        <span data-m="2" class="m-pill px-2.5 py-1 rounded-md border border-slate-800 text-slate-400">M02</span>
+        <span data-m="3" class="m-pill px-2.5 py-1 rounded-md border border-slate-800 text-slate-400">M03</span>
+        <span data-m="4" class="m-pill px-2.5 py-1 rounded-md border border-slate-800 text-slate-400">M04</span>
+        <span data-m="5" class="m-pill px-2.5 py-1 rounded-md border border-slate-800 text-slate-400">M05</span>
+      </nav>
+
+      <!-- Live MASM Variables -->
+      <div class="flex items-center gap-4 sm:gap-5 font-mono-tech text-xs">
+        <div>
+          <span class="text-slate-500">ATTEMPTS:</span>
+          <span id="hud-attempts" class="text-emerald-400 font-bold">2 / 2</span>
+        </div>
+        <div>
+          <span class="text-slate-500">SCORE:</span>
+          <span id="hud-score" class="text-sky-400 font-bold">00</span>
+        </div>
+        <button
+          id="sound-toggle"
+          class="px-3 py-1 rounded-full border border-slate-800 hover:border-sky-400/50 text-slate-300 hover:text-white transition cursor-pointer flex items-center gap-1.5"
+        >
+          <span id="sound-dot" class="w-1.5 h-1.5 rounded-full bg-slate-500"></span>
+          <span id="sound-label">SFX OFF</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- MAIN WORKSPACE -->
+  <main id="active-workspace" class="relative z-10 max-w-6xl w-full mx-auto px-4 sm:px-6 py-6 flex-1 flex flex-col gap-5">
+
+    <!-- STEP 01: RECEIVE INTELLIGENCE -->
+    <section class="glass-panel rounded-2xl p-5 sm:p-6 shadow-xl animate-in">
+      <div class="flex flex-wrap items-center justify-between gap-2 mb-2">
+        <div class="flex items-center gap-2">
+          <span class="px-2 py-0.5 rounded bg-sky-500/15 border border-sky-400/30 font-mono-tech text-[11px] font-semibold text-sky-400">
+            01 // RECEIVE INTELLIGENCE
+          </span>
+          <span id="mission-intro-tag" class="font-mono-tech text-xs text-amber-400 uppercase">
+            CONNECTING TO MASM ENGINE...
+          </span>
+        </div>
+        <a href="mission-start.html" class="font-mono-tech text-xs text-slate-400 hover:text-sky-400 transition">
+          [View Mission Orders]
+        </a>
+      </div>
+
+      <h1 id="mission-title" class="font-display text-2xl sm:text-3xl font-black text-white tracking-wider mb-2">
+        MISSION 01: THE FIRST BREACH
+      </h1>
+      <p id="mission-story" class="text-sm sm:text-base text-slate-300 leading-relaxed">
+        Awaiting telemetry stream from m1.exe...
+      </p>
+    </section>
+
+    <!-- STEP 02 & 03: INVESTIGATE + TAKE ACTION -->
+    <section class="grid grid-cols-1 lg:grid-cols-12 gap-5 flex-1">
+      
+      <!-- Left Panel: RECOVERED SECURITY LOGS (Missions 01-03) -->
+      <div id="evidence-panel" class="lg:col-span-5 glass-panel rounded-2xl p-5 flex flex-col justify-between">
+        <div>
+          <div class="flex items-center justify-between border-b border-slate-800 pb-3 mb-4">
+            <span class="font-mono-tech text-xs font-semibold uppercase tracking-widest text-sky-400">
+              02 // RECOVERED SECURITY LOGS
+            </span>
+            <span id="scan-counter" class="font-mono-tech text-xs text-slate-400">
+              0 / 0 SCANNED
+            </span>
+          </div>
+
+          <div id="evidence-list" class="space-y-2.5"></div>
+        </div>
+
+        <div class="mt-6 pt-3.5 border-t border-slate-800/80 flex items-center justify-between text-[11px] font-mono-tech text-slate-400">
+          <span>SOURCE: <span class="text-emerald-400">M1.EXE (MASM)</span></span>
+          <span>INSPECT ALL LOGS</span>
+        </div>
+      </div>
+
+      <!-- Right Panel: Terminal Inspector & Action Console -->
+      <div id="console-panel" class="lg:col-span-7 glass-panel rounded-2xl p-5 sm:p-6 flex flex-col justify-between">
+        <div>
+          <div class="flex items-center justify-between border-b border-slate-800 pb-3 mb-4">
+            <div class="flex items-center gap-2">
+              <span class="w-2 h-2 rounded-full bg-amber-400"></span>
+              <span id="viewer-header" class="font-mono-tech text-xs font-semibold text-amber-300 uppercase tracking-wider">
+                SELECT A SECURITY RECORD TO INSPECT
+              </span>
+            </div>
+            <span id="viewer-badge" class="font-mono-tech text-[10px] uppercase px-2.5 py-0.5 rounded bg-slate-800 text-slate-300">
+              STANDBY
+            </span>
+          </div>
+
+          <div class="bg-slate-950/75 border border-slate-800/90 rounded-xl p-4 min-h-[165px]">
+            <pre id="viewer-body" class="font-mono-tech text-xs sm:text-sm text-slate-200 whitespace-pre-wrap leading-relaxed">// Connected to MASM Assembly Backend.
+// Select any record on the left to inspect its recovered log entries.</pre>
+          </div>
+        </div>
+
+        <!-- STEP 03: TAKE ACTION -->
+        <div class="mt-6 pt-4 border-t border-slate-800">
+          <div class="flex items-center justify-between mb-3">
+            <span class="font-mono-tech text-xs font-semibold uppercase tracking-widest text-sky-400">
+              03 // TAKE ACTION — <span id="action-question" class="text-slate-200">Loading prompt...</span>
+            </span>
+          </div>
+
+          <div id="action-grid" class="grid grid-cols-1 sm:grid-cols-3 gap-3"></div>
+
+          <form id="text-input-form" class="hidden flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+            <div class="flex items-center flex-1 bg-slate-950/90 border border-sky-500/50 rounded-xl px-4 py-3 font-mono-tech text-sm">
+              <span id="input-prefix" class="text-amber-400 font-bold mr-2">DEC:</span>
+              <input
+                id="numeric-answer-input"
+                type="number"
+                required
+                placeholder="Enter decimal value"
+                class="bg-transparent text-white focus:outline-none w-full font-mono-tech"
+              />
+            </div>
+            <button
+              type="submit"
+              class="glow-btn px-6 py-3.5 rounded-xl bg-gradient-to-r from-sky-500 to-cyan-400 text-slate-950 font-extrabold text-xs uppercase tracking-widest cursor-pointer"
+            >
+              TRANSMIT &rarr;
+            </button>
+          </form>
+        </div>
+      </div>
+    </section>
+
+    <!-- STEP 04: SYSTEM RESPONSE -->
+    <section
+      id="response-banner"
+      class="hidden glass-panel rounded-2xl p-5 sm:p-6 border-sky-400/50 shadow-2xl animate-in"
+    >
+      <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+        <div class="space-y-1">
+          <div id="response-status" class="font-mono-tech text-xs font-bold uppercase tracking-widest text-emerald-400">
+            04 // SYSTEM RESPONSE
+          </div>
+          <p id="response-message" class="text-sm sm:text-base text-slate-100 leading-relaxed"></p>
+          <p id="response-subtext" class="font-mono-tech text-xs text-sky-400"></p>
+        </div>
+
+        <button
+          id="proceed-btn"
+          class="glow-btn w-full sm:w-auto px-8 py-3.5 rounded-full bg-gradient-to-r from-sky-500 to-cyan-400 text-slate-950 font-extrabold text-xs sm:text-sm uppercase tracking-[0.18em] cursor-pointer shrink-0"
+        >
+          NEXT MISSION &rarr;
+        </button>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- GAME OVER / VICTORY OVERLAY -->
+  <section
+    id="gameover-screen"
+    class="hidden relative z-20 flex-1 flex-col items-center justify-center px-4 text-center animate-in"
+  >
+    <div id="end-card" class="glass-panel max-w-lg w-full rounded-2xl p-8 sm:p-10 border-rose-500/40 shadow-2xl">
+      <p id="end-eyebrow" class="font-mono-tech text-xs uppercase tracking-[0.35em] text-rose-400 mb-3">
+        ========== GAME OVER ==========
+      </p>
+      <h2 id="end-title" class="font-display text-3xl sm:text-5xl font-black text-white tracking-wider mb-3">
+        SYSTEM COMPROMISED!
+      </h2>
+      <p id="end-subtitle" class="font-mono-tech text-xs sm:text-sm text-rose-300 uppercase tracking-widest mb-6">
+        OPERATOR 07 - CONNECTION LOST
+      </p>
+
+      <div class="bg-slate-950/80 border border-slate-800 rounded-xl py-4 px-6 mb-6">
+        <span class="font-mono-tech text-xs text-slate-400 uppercase block mb-1">FINAL SCORE</span>
+        <span id="gameover-score" class="font-mono-tech text-3xl font-bold text-sky-400">0</span>
+      </div>
+
+      <p id="end-footer" class="text-sm text-slate-300 mb-8">
+        HUMANITY'S LAST DEFENSE HAS FALLEN.
+      </p>
+
+      <div class="flex flex-col sm:flex-row gap-3 justify-center">
+        <button
+          id="retry-btn"
+          class="glow-btn px-8 py-3.5 rounded-full bg-gradient-to-r from-sky-500 to-cyan-400 text-slate-950 font-extrabold text-xs uppercase tracking-[0.2em] cursor-pointer"
+        >
+          REBOOT TERMINAL
+        </button>
+        <a
+          href="main.html"
+          class="px-8 py-3.5 rounded-full border border-slate-700 hover:border-sky-400/50 text-slate-300 hover:text-white font-bold text-xs uppercase tracking-[0.2em] transition"
+        >
+          MAIN MENU
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <script>
+    const inspected = new Set();
+    let sfxOn = false;
+    let synth = null;
+    let isSubmitting = false;
+
+    const soundToggle = document.getElementById("sound-toggle");
+    const soundDot = document.getElementById("sound-dot");
+    const soundLabel = document.getElementById("sound-label");
+
+    soundToggle.addEventListener("click", async () => {
+      sfxOn = !sfxOn;
+      if (sfxOn) {
+        soundDot.classList.replace("bg-slate-500", "bg-sky-400");
+        soundLabel.textContent = "SFX ON";
+        if (window.Tone) {
+          await Tone.start();
+          if (!synth) {
+            synth = new Tone.Synth({
+              oscillator: { type: "triangle" },
+              envelope: { attack: 0.005, decay: 0.06, sustain: 0, release: 0.05 }
+            }).toDestination();
+            synth.volume.value = -14;
+          }
+          synth.triggerAttackRelease("C6", "32n");
+        }
+      } else {
+        soundDot.classList.replace("bg-sky-400", "bg-slate-500");
+        soundLabel.textContent = "SFX OFF";
+      }
+    });
+
+    function beep(note = "G5") {
+      if (sfxOn && synth) synth.triggerAttackRelease(note, "32n");
+    }
+
+    function showEndOverlay(isVictory, score) {
+      document.getElementById("active-workspace").classList.add("hidden");
+      document.getElementById("gameover-score").textContent = score;
+      const overlay = document.getElementById("gameover-screen");
+      overlay.classList.remove("hidden");
+      overlay.classList.add("flex");
+
+      if (isVictory) {
+        document.getElementById("end-card").classList.replace("border-rose-500/40", "border-emerald-400/50");
+        document.getElementById("end-eyebrow").textContent = "========== HUMANITY RESTORED ==========";
+        document.getElementById("end-eyebrow").classList.replace("text-rose-400", "text-emerald-400");
+        document.getElementById("end-title").textContent = "NETWORK RECLAIMED!";
+        document.getElementById("end-subtitle").textContent = "OPERATOR 07 // STATUS: LEGEND";
+        document.getElementById("end-subtitle").classList.replace("text-rose-300", "text-sky-300");
+        document.getElementById("end-footer").textContent = "ALL FIVE MISSIONS COMPLETED!";
+      }
+    }
+
+    function renderMasmState(state) {
+      document.getElementById("mission-intro-tag").textContent = state.intro;
+      document.getElementById("mission-title").textContent = state.heading;
+      document.getElementById("mission-story").textContent = state.story;
+      document.getElementById("action-question").textContent = state.question;
+
+      // Update HUD Score & Attempts
+      document.getElementById("hud-score").textContent = String(state.score).padStart(2, "0");
+      const attEl = document.getElementById("hud-attempts");
+      attEl.textContent = `${state.attempts} / ${state.maxAttempts}`;
+      attEl.className = state.attempts > 1 ? "text-emerald-400 font-bold" : "text-amber-400 font-bold";
+
+      // Highlight active mission pill
+      document.querySelectorAll(".m-pill").forEach(pill => {
+        if (Number(pill.dataset.m) === state.mission) {
+          pill.classList.add("bg-sky-500", "text-slate-950", "border-sky-400", "font-bold");
+        } else {
+          pill.classList.remove("bg-sky-500", "text-slate-950", "border-sky-400", "font-bold");
+        }
+      });
+
+      const evidencePanel = document.getElementById("evidence-panel");
+      const consolePanel = document.getElementById("console-panel");
+      const evidenceList = document.getElementById("evidence-list");
+      const scanCounter = document.getElementById("scan-counter");
+
+      // Missions 04 & 05: Direct 3-question UI (hide left evidence cards)
+      if (state.mission >= 4) {
+        evidencePanel.classList.add("hidden");
+        consolePanel.classList.remove("lg:col-span-7");
+        consolePanel.classList.add("lg:col-span-12");
+
+        if (state.records.length > 0) {
+          document.getElementById("viewer-header").textContent = `${state.records[0].name} — QUESTION 0${state.stage} OF 03`;
+          document.getElementById("viewer-badge").textContent = "LIVE STATUS";
+          document.getElementById("viewer-body").textContent = state.records[0].body;
+        }
+      } else {
+        evidencePanel.classList.remove("hidden");
+        consolePanel.classList.remove("lg:col-span-12");
+        consolePanel.classList.add("lg:col-span-7");
+
+        evidenceList.innerHTML = "";
+        state.records.forEach((rec, idx) => {
+          const btn = document.createElement("button");
+          btn.className = "evidence-item w-full text-left px-4 py-3.5 rounded-xl border border-slate-800 bg-slate-900/60 hover:border-sky-400/50 transition flex items-center justify-between gap-2 cursor-pointer";
+          btn.innerHTML = `
+            <span class="font-mono-tech text-xs sm:text-sm text-slate-200 font-semibold">${rec.name}</span>
+            <span class="font-mono-tech text-[10px] px-2.5 py-0.5 rounded bg-slate-800 text-sky-400">${rec.badge}</span>
+          `;
+
+          btn.addEventListener("click", () => {
+            beep("E5");
+            document.querySelectorAll(".evidence-item").forEach(el => el.classList.remove("active"));
+            btn.classList.add("active");
+
+            inspected.add(rec.id);
+            scanCounter.textContent = `${inspected.size} / ${state.records.length} SCANNED`;
+
+            document.getElementById("viewer-header").textContent = rec.name;
+            document.getElementById("viewer-badge").textContent = rec.badge;
+            document.getElementById("viewer-body").textContent = rec.body;
+          });
+
+          evidenceList.appendChild(btn);
+
+          if (rec.badge === "ACTIVE" && idx === state.records.length - 1) {
+            document.getElementById("viewer-header").textContent = rec.name;
+            document.getElementById("viewer-badge").textContent = rec.badge;
+            document.getElementById("viewer-body").textContent = rec.body;
+          }
+        });
+        scanCounter.textContent = `${inspected.size} / ${state.records.length} SCANNED`;
+      }
+
+      // Render Option Buttons or Numeric Input
+      const actionGrid = document.getElementById("action-grid");
+      const textForm = document.getElementById("text-input-form");
+      actionGrid.innerHTML = "";
+
+      if (state.inputMode === "TEXT") {
+        actionGrid.classList.add("hidden");
+        textForm.classList.remove("hidden");
+        document.getElementById("input-prefix").textContent = state.inputPrefix || "DEC:";
+        document.getElementById("numeric-answer-input").value = "";
+        document.getElementById("numeric-answer-input").focus();
+      } else {
+        textForm.classList.add("hidden");
+        actionGrid.classList.remove("hidden");
+        actionGrid.className = state.options.length > 3
+          ? "grid grid-cols-1 sm:grid-cols-2 gap-3"
+          : "grid grid-cols-1 sm:grid-cols-3 gap-3";
+
+        state.options.forEach(opt => {
+          const btn = document.createElement("button");
+          btn.className = "px-4 py-3.5 rounded-xl border border-sky-500/40 bg-sky-500/10 hover:bg-sky-500 hover:text-slate-950 text-sky-300 font-mono-tech text-xs font-bold uppercase tracking-wider transition cursor-pointer";
+          btn.textContent = opt.label;
+          btn.addEventListener("click", () => submitChoiceToMasm(opt.value));
+          actionGrid.appendChild(btn);
+        });
+      }
+
+      // Handle MASM Evaluation Response
+      const responseBanner = document.getElementById("response-banner");
+      const responseStatus = document.getElementById("response-status");
+      const responseMessage = document.getElementById("response-message");
+      const responseSubtext = document.getElementById("response-subtext");
+      const proceedBtn = document.getElementById("proceed-btn");
+
+      if (state.status === "WRONG") {
+        beep("A3");
+        responseBanner.classList.remove("hidden");
+        responseStatus.textContent = "04 // SYSTEM RESPONSE — INCORRECT";
+        responseStatus.className = "font-mono-tech text-xs font-bold uppercase tracking-widest text-rose-400";
+        responseMessage.textContent = state.lastFeedback;
+        responseSubtext.textContent = `Attempts remaining: ${state.attempts}`;
+        proceedBtn.classList.add("hidden");
+      } else if (state.status === "STAGE_CLEAR") {
+        beep("E5");
+        responseBanner.classList.remove("hidden");
+        responseStatus.textContent = "04 // SYSTEM RESPONSE — STAGE VERIFIED";
+        responseStatus.className = "font-mono-tech text-xs font-bold uppercase tracking-widest text-sky-400";
+        responseMessage.textContent = state.lastFeedback;
+        responseSubtext.textContent = "Next stage loaded.";
+        proceedBtn.classList.add("hidden");
+      } else if (state.status === "SUCCESS") {
+        beep("C6");
+        const finalMissionScore = Math.max(state.score, state.mission * 20);
+        document.getElementById("hud-score").textContent = String(finalMissionScore).padStart(2, "0");
+        responseBanner.classList.remove("hidden");
+        responseStatus.textContent = "04 // SYSTEM RESPONSE — MISSION COMPLETED";
+        responseStatus.className = "font-mono-tech text-xs font-bold uppercase tracking-widest text-emerald-400";
+        responseMessage.textContent = state.lastFeedback;
+        responseSubtext.textContent = `POINTS AWARDED: +20  |  CURRENT SCORE: ${finalMissionScore}`;
+        proceedBtn.textContent = state.mission >= 5 ? "COMPLETE CAMPAIGN →" : "NEXT MISSION →";
+        proceedBtn.classList.remove("hidden");
+      } else if (state.status === "VICTORY") {
+        beep("C6");
+        showEndOverlay(true, state.score);
+      } else if (state.status === "GAMEOVER") {
+        beep("A3");
+        showEndOverlay(false, state.score);
+      } else {
+        responseBanner.classList.add("hidden");
+      }
+    }
+
+    async function initMasmSession() {
+      try {
+        const res = await fetch("/api/state");
+        const state = await res.json();
+        renderMasmState(state);
+      } catch (err) {
+        document.getElementById("mission-intro-tag").textContent =
+          "OFFLINE: Run 'node server.js' and open http://localhost:3000";
+      }
+    }
+
+    async function submitChoiceToMasm(choice) {
+      if (isSubmitting) return;
+      isSubmitting = true;
+      try {
+        const res = await fetch("/api/answer", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ choice })
+        });
+        const state = await res.json();
+        renderMasmState(state);
+      } finally {
+        isSubmitting = false;
+      }
+    }
+
+    document.getElementById("text-input-form").addEventListener("submit", (e) => {
+      e.preventDefault();
+      const val = document.getElementById("numeric-answer-input").value.trim();
+      if (val) submitChoiceToMasm(val);
+    });
+
+    document.getElementById("proceed-btn").addEventListener("click", async () => {
+      if (isSubmitting) return;
+      isSubmitting = true;
+      try {
+        const res = await fetch("/api/continue", { method: "POST" });
+        const state = await res.json();
+        if (state.status === "VICTORY") {
+          showEndOverlay(true, state.score);
+          return;
+        }
+        const nextM = String(state.mission).padStart(2, "0");
+        sessionStorage.setItem("cp2086_mission", nextM);
+        window.location.href = "mission-start.html";
+      } finally {
+        isSubmitting = false;
+      }
+    });
+
+    document.getElementById("retry-btn").addEventListener("click", async () => {
+      await fetch("/api/start", { method: "POST" });
+      sessionStorage.setItem("cp2086_mission", "01");
+      window.location.href = "mission-start.html";
+    });
+
+    initMasmSession();
+  </script>
+</body>
+</html>

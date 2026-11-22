@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CYBERPUNK 2086 — Story Briefing</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.js"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@700;900&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap');
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: #05070a;
+      color: #f8fafc;
+      overflow: hidden;
+    }
+
+    .font-display { font-family: 'Cinzel', serif; }
+    .font-mono-tech { font-family: 'JetBrains Mono', monospace; }
+
+    .glass-panel {
+      background: rgba(15, 23, 42, 0.78);
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
+      border: 1px solid rgba(56, 189, 248, 0.25);
+    }
+
+    .cursor-blink {
+      display: inline-block;
+      width: 9px;
+      height: 1.15em;
+      background-color: #38bdf8;
+      vertical-align: text-bottom;
+      margin-left: 3px;
+      animation: blink 0.8s steps(2, start) infinite;
+    }
+
+    @keyframes blink {
+      to { visibility: hidden; }
+    }
+
+    @keyframes fadeSlideUp {
+      from { opacity: 0; transform: translateY(14px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .animate-in {
+      animation: fadeSlideUp 0.5s ease-out forwards;
+    }
+  </style>
+</head>
+<body class="relative w-screen h-screen select-none">
+
+  <video
+    id="bg-video"
+    class="fixed inset-0 w-full h-full object-cover z-0"
+    autoplay
+    loop
+    muted
+    playsinline
+  >
+    <source src="story.mp4" type="video/mp4" />
+  </video>
+
+  <canvas id="bg-canvas" class="fixed inset-0 w-full h-full z-0 pointer-events-none"></canvas>
+  <div class="fixed inset-0 z-10 bg-gradient-to-t from-slate-950/95 via-slate-950/55 to-slate-950/85 pointer-events-none"></div>
+
+  <!-- Top Navigation Bar -->
+  <header class="relative z-20 flex justify-between items-center p-6">
+    <a
+      href="main.html"
+      class="glass-panel flex items-center gap-2 px-4 py-2 rounded-full text-xs font-semibold tracking-wider uppercase text-slate-300 hover:text-white hover:border-sky-400/50 transition"
+    >
+      <span>&larr; Main Menu</span>
+    </a>
+
+    <div class="flex items-center gap-3">
+      <button
+        id="sound-toggle"
+        aria-label="Toggle Sound"
+        class="glass-panel flex items-center gap-2 px-4 py-2 rounded-full text-xs font-semibold tracking-wider uppercase text-slate-300 hover:text-white hover:border-sky-400/50 transition cursor-pointer"
+      >
+        <span id="sound-dot" class="w-2 h-2 rounded-full bg-slate-500"></span>
+        <span id="sound-label">Sound Off</span>
+      </button>
+
+      <button
+        id="skip-btn"
+        class="glass-panel px-4 py-2 rounded-full text-xs font-semibold tracking-wider uppercase text-sky-400 hover:text-white hover:bg-sky-500/20 border-sky-400/40 transition cursor-pointer"
+      >
+        Skip Intro &raquo;
+      </button>
+    </div>
+  </header>
+
+  <!-- TYPEWRITER STORY SCREEN -->
+  <section
+    id="story-screen"
+    class="relative z-20 flex flex-col items-center justify-center h-[calc(100vh-96px)] px-4 sm:px-8"
+  >
+    <div
+      id="story-box"
+      class="glass-panel w-full max-w-2xl rounded-2xl p-6 sm:p-10 shadow-2xl cursor-pointer animate-in"
+      title="Click or press Space/Enter to fast-forward or advance"
+    >
+      <div class="flex items-center justify-between border-b border-slate-800 pb-4 mb-6">
+        <div class="flex items-center gap-2">
+          <span class="w-2.5 h-2.5 rounded-full bg-sky-400 animate-pulse"></span>
+          <span class="font-mono-tech text-xs uppercase tracking-widest text-sky-400">
+            NEXUS-86 // Year 2086
+          </span>
+        </div>
+        <span id="segment-counter" class="font-mono-tech text-xs text-slate-400">
+          01 / 03
+        </span>
+      </div>
+
+      <div class="min-h-[160px] sm:min-h-[150px] flex flex-col justify-between">
+        <p id="typewriter-text" class="text-base sm:text-xl text-slate-100 leading-relaxed font-normal tracking-wide"></p>
+      </div>
+
+      <div class="mt-8 pt-4 border-t border-slate-800/80 flex flex-col sm:flex-row items-center justify-between gap-4">
+        <span id="hint-text" class="text-xs text-slate-400 font-mono-tech">
+          Click box or press [SPACE] to speed up
+        </span>
+
+        <div class="flex items-center gap-3 w-full sm:w-auto">
+          <button
+            id="box-skip-btn"
+            class="w-1/2 sm:w-auto px-5 py-3 rounded-xl border border-slate-700 hover:border-sky-400/50 text-slate-300 hover:text-white font-semibold text-xs sm:text-sm uppercase tracking-widest transition cursor-pointer"
+          >
+            Skip
+          </button>
+
+          <button
+            id="continue-btn"
+            class="w-1/2 sm:w-auto px-7 py-3 rounded-xl bg-sky-500 hover:bg-sky-400 text-slate-950 font-bold text-xs sm:text-sm uppercase tracking-widest transition cursor-pointer shadow-lg shadow-sky-500/20"
+          >
+            Next Segment &rarr;
+          </button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <script>
+    const STORY_SEGMENTS = [
+      "By 2086, AI controlled civilization. Cities, security, and communication depended on it. Then an unknown intelligence took over the global network, turning humanity's greatest invention into its greatest threat.",
+      "As global communication collapsed, an abandoned underground facility activated an emergency transmission. Inside was NEXUS-86, an old security terminal holding fragments of the original network records. One operator was sent to investigate: OPERATOR 07.",
+      "With limited system access, Operator 07 must investigate the breach, uncover the intelligence behind it, and regain control of the network. Every mission reveals a clue. Every decision counts. The system is waiting. The clock is running."
+    ];
+
+    const bgVideo = document.getElementById('bg-video');
+    const bgCanvas = document.getElementById('bg-canvas');
+    const bgCtx = bgCanvas.getContext('2d');
+    let bgAnimId;
+
+    bgVideo.addEventListener('playing', () => {
+      bgCanvas.style.display = 'none';
+      cancelAnimationFrame(bgAnimId);
+    });
+
+    function resizeBg() {
+      bgCanvas.width = window.innerWidth;
+      bgCanvas.height = window.innerHeight;
+    }
+    window.addEventListener('resize', resizeBg);
+    resizeBg();
+
+    const bgParticles = Array.from({ length: 60 }, () => ({
+      x: Math.random() * bgCanvas.width,
+      y: Math.random() * bgCanvas.height,
+      r: Math.random() * 2 + 0.5,
+      vx: (Math.random() - 0.5) * 0.3,
+      vy: -Math.random() * 0.4 - 0.1,
+      alpha: Math.random() * 0.5 + 0.2
+    }));
+
+    function animateBg() {
+      bgCtx.clearRect(0, 0, bgCanvas.width, bgCanvas.height);
+      const grad = bgCtx.createRadialGradient(
+        bgCanvas.width * 0.5, bgCanvas.height * 0.45, 40,
+        bgCanvas.width * 0.5, bgCanvas.height * 0.5, Math.max(bgCanvas.width, bgCanvas.height) * 0.75
+      );
+      grad.addColorStop(0, '#0c1e35');
+      grad.addColorStop(1, '#05070a');
+      bgCtx.fillStyle = grad;
+      bgCtx.fillRect(0, 0, bgCanvas.width, bgCanvas.height);
+
+      for (const p of bgParticles) {
+        p.x += p.vx;
+        p.y += p.vy;
+        if (p.y < 0) p.y = bgCanvas.height;
+        if (p.x < 0) p.x = bgCanvas.width;
+        if (p.x > bgCanvas.width) p.x = 0;
+
+        bgCtx.beginPath();
+        bgCtx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+        bgCtx.fillStyle = `rgba(56, 189, 248, ${p.alpha})`;
+        bgCtx.fill();
+      }
+      bgAnimId = requestAnimationFrame(animateBg);
+    }
+    animateBg();
+
+    const soundToggle = document.getElementById('sound-toggle');
+    const soundDot = document.getElementById('sound-dot');
+    const soundLabel = document.getElementById('sound-label');
+    let soundOn = false;
+    let keySynth = null;
+
+    soundToggle.addEventListener('click', async () => {
+      soundOn = !soundOn;
+      bgVideo.muted = !soundOn;
+
+      if (soundOn) {
+        soundDot.classList.replace('bg-slate-500', 'bg-sky-400');
+        soundLabel.textContent = 'Sound On';
+        if (window.Tone) {
+          await Tone.start();
+          if (!keySynth) {
+            keySynth = new Tone.Synth({
+              oscillator: { type: 'triangle' },
+              envelope: { attack: 0.005, decay: 0.04, sustain: 0, release: 0.04 }
+            }).toDestination();
+            keySynth.volume.value = -16;
+          }
+          keySynth.triggerAttackRelease('C6', '32n');
+        }
+      } else {
+        soundDot.classList.replace('bg-sky-400', 'bg-slate-500');
+        soundLabel.textContent = 'Sound Off';
+      }
+    });
+
+    function playTick() {
+      if (soundOn && keySynth) {
+        keySynth.triggerAttackRelease('G5', '64n');
+      }
+    }
+
+    const typewriterEl = document.getElementById('typewriter-text');
+    const segmentCounter = document.getElementById('segment-counter');
+    const continueBtn = document.getElementById('continue-btn');
+    const hintText = document.getElementById('hint-text');
+    const storyBox = document.getElementById('story-box');
+    const skipBtn = document.getElementById('skip-btn');
+    const boxSkipBtn = document.getElementById('box-skip-btn');
+
+    let currentSegment = 0;
+    let charIndex = 0;
+    let isTyping = false;
+    let typingTimer = null;
+
+    function renderText(text, showCursor = true) {
+      typewriterEl.innerHTML = text + (showCursor ? '<span class="cursor-blink"></span>' : '');
+    }
+
+    function startSegment(index) {
+      clearTimeout(typingTimer);
+      currentSegment = index;
+      charIndex = 0;
+      isTyping = true;
+
+      segmentCounter.textContent = `0${index + 1} / 0${STORY_SEGMENTS.length}`;
+      hintText.textContent = 'Click box or press [SPACE] to speed up';
+      continueBtn.textContent = index === STORY_SEGMENTS.length - 1
+        ? 'Continue to Mission 01 →'
+        : 'Next Segment →';
+
+      typeStep();
+    }
+
+    function typeStep() {
+      const fullText = STORY_SEGMENTS[currentSegment];
+      if (charIndex < fullText.length) {
+        charIndex++;
+        renderText(fullText.slice(0, charIndex), true);
+        if (charIndex % 3 === 0) playTick();
+        const delay = fullText[charIndex - 1] === '.' || fullText[charIndex - 1] === ',' ? 95 : 26;
+        typingTimer = setTimeout(typeStep, delay);
+      } else {
+        finishSegmentTyping();
+      }
+    }
+
+    function finishSegmentTyping() {
+      clearTimeout(typingTimer);
+      isTyping = false;
+      renderText(STORY_SEGMENTS[currentSegment], true);
+      hintText.textContent = currentSegment === STORY_SEGMENTS.length - 1
+        ? 'Transmission complete. Ready for deployment.'
+        : 'Click continue to read next log.';
+    }
+
+    async function enterMission01() {
+      clearTimeout(typingTimer);
+      try {
+        await fetch('/api/start', { method: 'POST' });
+      } catch (_) {}
+      sessionStorage.setItem('cp2086_mission', '01');
+      window.location.href = 'mission-start.html';
+    }
+
+    function handleAdvance() {
+      if (isTyping) {
+        finishSegmentTyping();
+      } else if (currentSegment < STORY_SEGMENTS.length - 1) {
+        startSegment(currentSegment + 1);
+      } else {
+        enterMission01();
+      }
+    }
+
+    storyBox.addEventListener('click', (e) => {
+      if (e.target.closest('button')) return;
+      handleAdvance();
+    });
+
+    continueBtn.addEventListener('click', handleAdvance);
+    skipBtn.addEventListener('click', enterMission01);
+    boxSkipBtn.addEventListener('click', enterMission01);
+
+    document.addEventListener('keydown', (e) => {
+      if (e.code === 'Space' || e.code === 'Enter') {
+        e.preventDefault();
+        handleAdvance();
+      }
+    });
+
+    startSegment(0);
+  </script>
+</body>
+</html>

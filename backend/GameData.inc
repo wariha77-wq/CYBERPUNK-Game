@@ -1,0 +1,390 @@
+; =====================================================
+; CYBERPUNK 2086
+; GAME DATA
+; =====================================================
+
+; BOOT SEQUENCE
+
+boot1 BYTE "CYBERPUNK 2086 BIOS VERSION 8.6",0
+boot2 BYTE "INITIALIZING LEGACY TERMINAL...",0
+boot3 BYTE "LOADING MEMORY MODULES... OK",0
+boot4 BYTE "CONNECTING TO GLOBAL NETWORK...",0
+boot5 BYTE "ERROR: NETWORK COMPROMISED",0
+boot6 BYTE "WARNING: ALL HUMANITY SYSTEMS LOCKED",0
+boot7 BYTE "UNKNOWN TRANSMISSION DETECTED",0
+boot8 BYTE "We have been waiting for you, Operator 07.",0
+boot9 BYTE "IDENTITY ACCEPTED: OPERATOR 07",0
+boot10 BYTE "WELCOME TO CYBERPUNK 2086.",0
+
+
+; MISSION HEADINGS
+
+m1Heading BYTE "MISSION 01: THE FIRST BREACH",0
+m2Heading BYTE "MISSION 02: THE DEADLOCK PROTOCOL",0
+m3Heading BYTE "MISSION 03: THE FALSE FACE",0
+m4Heading BYTE "MISSION 04: THE BROKEN PROTOCOL",0
+m5Heading BYTE "MISSION 05: THE LAST PROTOCOL",0
+
+
+; GAME VARIABLES
+
+PLAYER_SCORE DWORD 0
+ATTEMPTS_REMAINING DWORD 3
+CURRENT_MISSION DWORD 1
+THREAT_LEVEL DWORD 0
+ACCESS_LEVEL DWORD 0
+MISSION_STATUS DWORD 0
+EXPECTED_ANSWER DWORD 0
+SELECTED_INDEX DWORD 0
+playerAnswer DWORD ?
+TOTAL_QUESTIONS DWORD 3
+CURRENT_STAGE DWORD 0
+
+
+; SHARED QUESTION VARIABLES
+
+Q_QUESTION DWORD ?
+Q_OPTION_A DWORD ?
+Q_OPTION_B DWORD ?
+Q_OPTION_C DWORD ?
+questionPrompt BYTE "ENTER YOUR ANSWER (1-3): ",0
+
+
+; =====================================================
+; MISSION 01 - THE FIRST BREACH
+; =====================================================
+
+m1Intro BYTE "MISSION 01 INITIALIZED,",0
+m1Story BYTE "A security breach has been detected in the central network.",0
+m1LogHeading BYTE "SECURITY LOGS:",0
+
+m1Record1 BYTE "RECORD 01:",0
+m1Record1Time BYTE "TIME: 02:14",0
+m1Record1Location BYTE "LOCATION: SERVER ROOM",0
+m1Record1Status BYTE "STATUS: UNAUTHORIZED ACCESS",0
+
+m1Record2 BYTE "RECORD 02:",0
+m1Record2Time BYTE "TIME: 02:14",0
+m1Record2Location BYTE "LOCATION: DATA CORE",0
+m1Record2Status BYTE "STATUS: ACCESS GRANTED",0
+
+m1Record3 BYTE "RECORD 03:",0
+m1Record3Time BYTE "TIME: 02:23",0
+m1Record3Location BYTE "LOCATION: SECURITY TERMINAL",0
+m1Record3Status BYTE "STATUS: SYSTEM COMPROMISED",0
+
+m1Question BYTE "WHO INITIATED THE BREACH?",0
+m1Options BYTE "1. SYSTEM ADMINISTRATOR",0
+m1Option2 BYTE "2. EXTERNAL INTRUDER",0
+m1Option3 BYTE "3. SECURITY AI",0
+m1Prompt BYTE "ENTER YOUR ANSWER: ",0
+m1ExpectedAnswer DWORD 2
+
+m1WrongMsg BYTE "INCORRECT. INVESTIGATION CONTINUES.",0
+m1CorrectMsg BYTE "CORRECT. INTRUDER IDENTIFIED.",0
+m1SuccessMsg BYTE "MISSION COMPLETE.",0
+m1FailMsg BYTE "MISSION FAILED.",0
+
+question1 BYTE "4, 9, 16, 25, ?, 49",0
+question2 BYTE "3, 8, 18, 38, ?, 158",0
+question3 BYTE "2, 6, 12, 20, ?, 42",0
+
+m1qBank DWORD OFFSET question1, OFFSET question2, OFFSET question3
+m1aBank DWORD 36, 78, 30
+
+
+; =====================================================
+; MISSION 02 - THE DEADLOCK PROTOCOL
+; =====================================================
+
+m2Intro BYTE "MISSION 02: TRACE THE SIGNAL.",0
+m2Story BYTE "An unknown signal has infiltrated the network.",0
+
+; STAGE 01 - SIGNAL INTEGRITY
+
+m2Stage1Title BYTE "STAGE 1: SIGNAL INTEGRITY",0
+m2Stage1Info1 BYTE "THREE SIGNALS HAVE BEEN INTERCEPTED.",0
+m2Stage1Info2 BYTE "THE SYSTEM USES AN EVEN-NUMBERED SIGNAL PROTOCOL.",0
+m2Stage1Info3 BYTE "VALID SIGNALS MUST END IN AN EVEN DIGIT.",0
+m2Stage1Info4 BYTE "ONLY ONE SIGNAL PASSES THE CHECK.",0
+m2Stage1Info5 BYTE "IDENTIFY THE VALID SIGNAL.",0
+
+m2Stage1Question BYTE "WHICH SIGNAL PASSES THE INTEGRITY CHECK?",0
+m2Stage1Options BYTE "1. SIGNAL 731",0
+m2Stage1Option2 BYTE "2. SIGNAL 845",0
+m2Stage1Option3 BYTE "3. SIGNAL 862",0
+m2Stage1Option4 BYTE "4. SIGNAL 957",0
+
+m2Stage1Prompt BYTE "ENTER ANSWER (1-4): ",0
+m2Stage1Success BYTE "STAGE 1 COMPLETE.",0
+
+; STAGE 02 - DATA RECONSTRUCTION
+
+m2Stage2Title BYTE "STAGE 2: DATA RECONSTRUCTION",0
+m2Stage2Info1 BYTE "FRAGMENT A: 12 | FRAGMENT B: 24",0
+m2Stage2Info2 BYTE "FRAGMENT C: 48 | FRAGMENT D: CORRUPTED",0
+
+m2Stage2Question BYTE "WHAT VALUE REPLACES THE CORRUPTED FRAGMENT?",0
+m2Stage2Option1 BYTE "1. 60",0
+m2Stage2Option2 BYTE "2. 72",0
+m2Stage2Option3 BYTE "3. 96",0
+m2Stage2Option4 BYTE "4. 108",0
+
+m2Stage2Prompt BYTE "ENTER ANSWER (1-4): ",0
+m2Stage2Success BYTE "STAGE 2 COMPLETE.",0
+
+; STAGE 03 - SOURCE AUTHENTICATION
+
+m2Stage3Title BYTE "STAGE 3: SOURCE AUTHENTICATION",0
+m2Stage3Info1 BYTE "THREE REPORTS HAVE BEEN INTERCEPTED.",0
+
+m2Stage3Original BYTE "ORIGINAL SYSTEM RECORD:",0
+m2Stage3Record1 BYTE "AUTHORIZATION CODE: 4821",0
+m2Stage3Record2 BYTE "ACCESS LOCATION: SERVER 04",0
+m2Stage3Record3 BYTE "STATUS: VERIFIED",0
+
+m2Stage3SourceA BYTE "SOURCE A: CODE 4821 | LOCATION SERVER 04 | VERIFIED",0
+m2Stage3SourceB BYTE "SOURCE B: CODE 4821 | LOCATION SERVER 09 | VERIFIED",0
+m2Stage3SourceC BYTE "SOURCE C: CODE 7392 | LOCATION SERVER 04 | VERIFIED",0
+
+m2Stage3Question BYTE "WHICH SOURCE MATCHES THE ORIGINAL RECORD?",0
+m2Stage3Option1 BYTE "1. SOURCE A",0
+m2Stage3Option2 BYTE "2. SOURCE B",0
+m2Stage3Option3 BYTE "3. SOURCE C",0
+
+m2Stage3Prompt BYTE "ENTER ANSWER (1-3): ",0
+m2Stage3Success BYTE "STAGE 3 COMPLETE.",0
+
+; MISSION 02 MESSAGES
+
+m2CorrectMsg BYTE "ALL STAGES COMPLETED.",0
+m2MissionSuccess BYTE "MISSION 02 COMPLETE.",0
+m2WrongMsg BYTE "INCORRECT ANSWER.",0
+m2MissionFail BYTE "MISSION FAILED.",0
+
+
+; =====================================================
+; MISSION 03 - THE DEADLOCK PROTOCOL
+; =====================================================
+
+m3Intro BYTE "MISSION 03: DEADLOCK PROTOCOL",0
+m3Story BYTE "FATAL ERROR: PROCESSOR EXECUTION BLOCKED.",0
+m3Story2 BYTE "REGISTER CONFLICT DETECTED.",0
+m3Story3 BYTE "OPERATOR 07, RESTORE THE SYSTEM OR LOSE CONTROL.",0
+
+; QUESTION 1 - REGISTER ARITHMETIC
+m3Q1 BYTE "ROUND 1: REGISTER ARITHMETIC",13,10
+     BYTE "MOV AX, 0015H",13,10
+     BYTE "MOV BX, 000AH",13,10
+     BYTE "ADD AX, BX",13,10
+     BYTE "SUB AX, 0005H",13,10
+     BYTE "Enter final AX value (decimal): ",0
+
+; QUESTION 2 - HEXADECIMAL ARITHMETIC
+m3Q2 BYTE "ROUND 2: HEXADECIMAL ARITHMETIC",13,10
+     BYTE "MOV AL, 3AH",13,10
+     BYTE "ADD AL, 0CH",13,10
+     BYTE "Enter final AL value (decimal): ",0
+
+; QUESTION 3 - MEMORY ADDRESSING
+m3Q3 BYTE "ROUND 3: MEMORY ADDRESSING",13,10
+     BYTE "MOV SI, 0004H",13,10
+     BYTE "MOV AX, [SI]",13,10
+     BYTE "Memory at offset 0004H contains 0012H.",13,10
+     BYTE "Enter final AX value (decimal): ",0
+
+; QUESTION 4 - SHIFT OPERATIONS
+m3Q4 BYTE "ROUND 4: SHIFT OPERATIONS",13,10
+     BYTE "MOV AL, 00000101B",13,10
+     BYTE "SHL AL, 1",13,10
+     BYTE "Enter final AL value (decimal): ",0
+
+; QUESTION 5 - MULTIPLICATION
+m3Q5 BYTE "ROUND 5: MULTIPLICATION",13,10
+     BYTE "MOV AL, 06H",13,10
+     BYTE "MOV BL, 04H",13,10
+     BYTE "MUL BL",13,10
+     BYTE "Enter final AX value (decimal): ",0
+
+; QUESTION 6 - DIVISION
+m3Q6 BYTE "ROUND 6: DIVISION",13,10
+     BYTE "MOV AX, 0024H",13,10
+     BYTE "MOV BL, 06H",13,10
+     BYTE "DIV BL",13,10
+     BYTE "Enter the quotient in decimal: ",0
+
+m3QuestionBank DWORD OFFSET m3Q1
+               DWORD OFFSET m3Q2
+               DWORD OFFSET m3Q3
+               DWORD OFFSET m3Q4
+               DWORD OFFSET m3Q5
+               DWORD OFFSET m3Q6
+
+m3Answers DWORD 26, 70, 18, 10, 24, 6
+
+m3QuestionIndex DWORD 0
+m3PlayerAnswer DWORD 0
+
+m3Stage1Title BYTE "STAGE 01: REGISTER ARITHMETIC",0
+m3Stage2Title BYTE "STAGE 02: HEXADECIMAL ARITHMETIC",0
+m3Stage3Title BYTE "STAGE 03: MEMORY ADDRESSING",0
+m3Stage4Title BYTE "STAGE 04: SHIFT OPERATIONS",0
+m3Stage5Title BYTE "STAGE 05: MULTIPLICATION",0
+m3Stage6Title BYTE "STAGE 06: DIVISION",0
+
+m3StageTitles DWORD OFFSET m3Stage1Title
+              DWORD OFFSET m3Stage2Title
+              DWORD OFFSET m3Stage3Title
+              DWORD OFFSET m3Stage4Title
+              DWORD OFFSET m3Stage5Title
+              DWORD OFFSET m3Stage6Title
+
+m3CorrectMsg BYTE "CORRECT! PROCESSOR STABILITY RESTORED.",0
+m3WrongMsg BYTE "WRONG ANSWER! SYSTEM THREAT INCREASED.",0
+m3InvalidMsg BYTE "INVALID INPUT! ENTER A NON-NEGATIVE NUMBER.",0
+m3InputPrompt BYTE "ENTER YOUR ANSWER (DECIMAL): ",0
+m3AttemptMsg BYTE "ATTEMPTS REMAINING: ",0
+m3SuccessMsg BYTE "DEADLOCK BROKEN! CPU SYSTEM RESTORED.",0
+m3FailMsg BYTE "MISSION FAILED. PROCESSOR LOCKED.",0
+
+
+; =====================================================
+; MISSION 04 - THE BROKEN PROTOCOL
+; =====================================================
+
+m4Intro BYTE "CENTRAL NETWORK FAILURE DETECTED.",0
+m4Story BYTE "OPERATOR 07: Restore the damaged system dependencies.",0
+
+; STAGE 01 - SYSTEM DEPENDENCY AUDIT
+m4Stage1Title BYTE "STAGE 01: SYSTEM DEPENDENCY AUDIT",0
+m4Log BYTE "========== SYSTEM STATUS ==========",0
+m4Power BYTE "POWER CORE: OFFLINE",0
+m4Kernel BYTE "KERNEL: OFFLINE",0
+m4Drivers BYTE "DRIVERS: OFFLINE",0
+m4Database BYTE "DATABASE: OFFLINE",0
+m4Network BYTE "NETWORK: OFFLINE",0
+
+m4Q1 BYTE "Q1: The Kernel requires power. What comes first?",0
+m4Q1A BYTE "1. DATABASE",0
+m4Q1B BYTE "2. POWER CORE",0
+m4Q1C BYTE "3. NETWORK",0
+m4Stage1Success BYTE "STAGE 01 COMPLETE. POWER CORE ONLINE.",0
+
+; STAGE 02 - BOOT SEQUENCE RECOVERY
+m4Stage2Title BYTE "STAGE 02: BOOT SEQUENCE RECOVERY",0
+m4Stage2Info1 BYTE "POWER CORE: ONLINE",0
+m4Stage2Info2 BYTE "KERNEL: INITIALIZED",0
+m4Stage2Info3 BYTE "PENDING MODULES: DRIVERS / DATABASE / NETWORK",0
+
+m4Q2 BYTE "Q2: Kernel requires Power Core. What follows Kernel?",0
+m4Q2A BYTE "1. DATABASE",0
+m4Q2B BYTE "2. DRIVERS",0
+m4Q2C BYTE "3. NETWORK",0
+m4Stage2Success BYTE "STAGE 02 COMPLETE. DRIVERS INITIALIZED.",0
+
+; STAGE 03 - NETWORK RESTORATION
+m4Stage3Title BYTE "STAGE 03: NETWORK RESTORATION",0
+m4Stage3Info1 BYTE "DRIVERS: ONLINE",0
+m4Stage3Info2 BYTE "DATABASE: RESTORED",0
+m4Stage3Info3 BYTE "NETWORK: DISCONNECTED",0
+
+m4Q3 BYTE "Q3: Database is restored, but Network is disconnected.",0
+m4Q3A BYTE "1. Verify the network connection and restore communication.",0
+m4Q3B BYTE "2. Delete the database.",0
+m4Q3C BYTE "3. Shut down the Kernel.",0
+m4Stage3Success BYTE "STAGE 03 COMPLETE. NETWORK ONLINE.",0
+
+; MISSION 04 MESSAGES
+m4Success BYTE "MISSION 04 COMPLETED! SYSTEM RECOVERY SUCCESSFUL.",0
+m4Fail BYTE "MISSION 04 FAILED. SYSTEM RECOVERY ABORTED.",0
+
+
+; =====================================================
+; MISSION 05 - THE LAST PROTOCOL
+; =====================================================
+
+m5Intro BYTE "FINAL PROTOCOL ACTIVATED.",0
+m5Story BYTE "OPERATOR 07: The alien intelligence controls the central AI.",0
+
+; STAGE 01 - FINAL CORE STATUS
+m5Stage1Title BYTE "STAGE 01: FINAL CORE STATUS",0
+m5Log BYTE "========== FINAL CORE STATUS ==========",0
+m5Core BYTE "CORE STATUS: COMPROMISED",0
+m5Human BYTE "HUMAN ACCESS: RESTRICTED",0
+m5Backup BYTE "BACKUP: AVAILABLE",0
+m5Override BYTE "OVERRIDE: UNVERIFIED",0
+
+m5Q1 BYTE "Q1: The override command is unverified. What next?",0
+m5Q1A BYTE "1. Execute the override immediately.",0
+m5Q1B BYTE "2. Verify its authorization.",0
+m5Q1C BYTE "3. Delete the backup.",0
+m5Stage1Success BYTE "STAGE 01 COMPLETE. AUTHORIZATION CHECKED.",0
+
+; STAGE 02 - CORE CONTAINMENT
+m5Stage2Title BYTE "STAGE 02: CORE CONTAINMENT",0
+m5Stage2Info1 BYTE "OVERRIDE AUTHORIZATION: REJECTED",0
+m5Stage2Info2 BYTE "BACKUP INTEGRITY: VERIFIED",0
+m5Stage2Info3 BYTE "MAIN CORE: COMPROMISED",0
+
+m5Q2 BYTE "Q2: Backup is verified, but the main core is compromised.",0
+m5Q2A BYTE "1. Restore the verified backup using approved recovery.",0
+m5Q2B BYTE "2. Trust the compromised core.",0
+m5Q2C BYTE "3. Delete all recovery data.",0
+m5Stage2Success BYTE "STAGE 02 COMPLETE. BACKUP RESTORED.",0
+
+; STAGE 03 - SOVEREIGNTY RESTORATION
+m5Stage3Title BYTE "STAGE 03: SOVEREIGNTY RESTORATION",0
+m5Stage3Info1 BYTE "BACKUP RESTORATION: COMPLETE",0
+m5Stage3Info2 BYTE "ALIEN SUBROUTINE: CONTAINED",0
+m5Stage3Info3 BYTE "AWAITING FINAL OPERATOR COMMAND",0
+
+m5Q3 BYTE "Q3: Choose the final action.",0
+m5Q3A BYTE "1. Preserve the alien intelligence.",0
+m5Q3B BYTE "2. Restore human control and isolate the compromised core.",0
+m5Q3C BYTE "3. Disable all human access permanently.",0
+m5Stage3Success BYTE "STAGE 03 COMPLETE. CORE ISOLATED.",0
+
+; MISSION 05 MESSAGES
+m5Success BYTE "MISSION 05 COMPLETED! HUMANITY HAS REGAINED CONTROL.",0
+m5Fail BYTE "MISSION 05 FAILED. THE CORE REMAINS COMPROMISED.",0
+
+
+; =====================================================
+; MAIN MENU, INSTRUCTIONS & GENERAL DISPLAY MESSAGES
+; =====================================================
+
+menu1 BYTE "1. START NEW GAME",0
+menu2 BYTE "2. INSTRUCTIONS",0
+menu3 BYTE "3. EXIT",0
+
+prompt BYTE "Select your option: ",0
+invalidChoiceMsg BYTE "INVALID CHOICE! TRY AGAIN.",0
+
+instruction1 BYTE "========== GAME INSTRUCTIONS ==========",0
+instruction2 BYTE "1. Answer the questions correctly.",0
+instruction3 BYTE "2. Complete missions to earn points.",0
+instruction4 BYTE "3. You have limited attempts.",0
+instruction5 BYTE "4. Complete all missions to win.",0
+
+gameTitle BYTE "CYBERPUNK 2086 - The Last Human Protocol",0
+welcomeMsg BYTE "Welcome, OPERATOR 07!",0
+
+separator BYTE "==============================================",0
+
+correctMsg BYTE "ACCESS GRANTED!",0
+wrongMsg BYTE "INCORRECT ANSWER!",0
+
+scoreMsg BYTE "CURRENT PLAYER SCORE: ",0
+attemptMsg BYTE "Attempts remaining: ",0
+
+gameOverTitle BYTE "========== SYSTEM FAILURE ==========",0
+gameOverMsg BYTE "GAME OVER. OPERATOR 07 FAILED THE MISSION.",0
+operatorMsg BYTE "OPERATOR 07 STATUS: TERMINATED",0
+finalScoreMsg BYTE "FINAL PLAYER SCORE: ",0
+gameOverFooter BYTE "CONNECTION TERMINATED.",0
+
+victoryTitle BYTE "========== HUMANITY RESTORED ==========",0
+missionPendingMsg BYTE "MISSION MODULE NOT IMPLEMENTED YET.",0
+finalVictoryMsg BYTE "ALL FIVE MISSIONS COMPLETED!",0
+victoryCliff BYTE "CONGRATULATIONS, OPERATOR 07. YOU WON...",0
+Cliff BYTE "BUT WHY SHOULD WE LEAVE?",0

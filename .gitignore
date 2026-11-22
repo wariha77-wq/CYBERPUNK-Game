@@ -1,0 +1,27 @@
+# Node.js dependencies & lockfile
+node_modules/
+package-lock.json
+npm-debug.log*
+
+# Visual Studio / MASM build artifacts (keep .asm, .inc, and backend/m1.exe if needed)
+.vs/
+Debug/
+Release/
+x64/
+x86/
+*.obj
+*.pdb
+*.ilk
+*.lst
+*.sbr
+*.bsc
+*.idb
+*.tlog
+*.log
+*.lastbuildstate
+*.user
+
+# Environment & OS files
+.env
+.DS_Store
+Thumbs.db
